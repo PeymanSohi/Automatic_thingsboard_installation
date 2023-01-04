@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tb-js-executor
+  namespace: thingsboard
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: tb-js-executor
+  template:
+    metadata:
+      labels:
+        app: tb-js-executor
+    spec:
+      containers:
+      - name: server
+        imagePullPolicy: IfNotPresent
+        image: thingsboard/tb-js-executor:3.2.0
+        env:
+        - name: REMOTE_JS_EVAL_REQUEST_TOPIC
+          value: "js_eval.requests"
+        - name: TB_KAFKA_SERVERS
+          value: "tb-kafka:9092"
+        - name: LOGGER_LEVEL
+          value: "info"
+        - name: LOG_FOLDER
+          value: "logs"
+        - name: LOGGER_FILENAME
+          value: "tb-js-executor-%DATE%.log"
+        - name: DOCKER_MODE
+          value: "true"
+        - name: SCRIPT_BODY_TRACE_FREQUENCY
+          value: "1000"
+      restartPolicy: Always
+      nodeSelector:
+        kubernetes.io/hostname: $selected_node_resources
+

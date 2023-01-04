@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tb-web-ui
+  namespace: thingsboard
+spec:
+  type: ClusterIP
+  #type: NodePort
+  selector:
+    app: tb-web-ui
+  ports:
+  - port: 8080
+    name: http

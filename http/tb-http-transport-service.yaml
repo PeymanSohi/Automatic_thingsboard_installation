@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tb-http-transport
+  namespace: thingsboard
+spec:
+  type: ClusterIP
+  # type: NodePort
+  selector:
+    app: tb-http-transport
+  ports:
+  - port: 8080
+    name: http

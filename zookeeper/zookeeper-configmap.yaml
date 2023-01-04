@@ -1,0 +1,30 @@
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tb-zookeeper
+  namespace: thingsboard
+data:
+  start-node.sh: |
+    #!/bin/sh
+    set -ex;
+    mkdir -p "$ZOO_DATA_LOG_DIR" "$ZOO_DATA_DIR" "$ZOO_CONF_DIR";
+    echo $HOSTNAME| rev | cut -d "-" -f1 | rev > "$ZOO_DATA_DIR/myid"
+    /apache-zookeeper-3.5.7-bin/bin/zkServer.sh start-foreground /conf/zoo.cfg
+  zoo.cfg: |+
+    dataDir=/data
+    dataLogDir=/datalog
+    tickTime=2000
+    initLimit=5
+    syncLimit=2
+    maxClientCnxns=200
+    standaloneEnabled=true
+    server.0=zookeeper-0.zookeeper.thingsboard.svc.cluster.local:2888:3888;2181
+  log4j.properties: |+
+    zookeeper.root.logger=INFO, CONSOLE
+    zookeeper.console.threshold=INFO
+    log4j.rootLogger=${zookeeper.root.logger}
+    log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender
+    log4j.appender.CONSOLE.Threshold=${zookeeper.console.threshold}
+    log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout
+    log4j.appender.CONSOLE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L] - %m%n

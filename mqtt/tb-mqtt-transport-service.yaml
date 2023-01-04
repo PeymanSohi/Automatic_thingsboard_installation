@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tb-mqtt-transport
+  namespace: thingsboard
+spec:
+  # type: ClusterIP
+  type: NodePort
+  selector:
+    app: tb-mqtt-transport
+  ports:
+  - port: 1883
+    name: mqtt

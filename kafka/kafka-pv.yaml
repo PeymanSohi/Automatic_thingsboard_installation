@@ -1,0 +1,81 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: kafka-logs
+  labels:
+    type: local
+spec:
+  storageClassName: local-storage
+  capacity:
+    storage: 200Mi
+  local:
+    path: /mnt/kafka-logs        #This path should be created manually on node
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+     namespace: thingsboard
+     name: logs-tb-kafka-0
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+              - $selected_node_thirdparty
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: kafka-app-logs
+  labels:
+    type: local
+spec:
+  storageClassName: local-storage
+  capacity:
+    storage: 200Mi
+  local:
+    path: /mnt/kafka-app-logs        #This path should be created manually on node
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+     namespace: thingsboard
+     name: app-logs-tb-kafka-0
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+              - $selected_node_thirdparty
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: kafka-config
+  labels:
+    type: local
+spec:
+  storageClassName: local-storage
+  capacity:
+    storage: 200Mi
+  local:
+    path: /mnt/kafka-config        #This path should be created manually on node
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+     namespace: thingsboard
+     name: config-tb-kafka-0
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+              - $selected_node_thirdparty

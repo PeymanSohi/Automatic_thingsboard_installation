@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tb-node-cache-config
+  namespace: thingsboard
+  labels:
+    name: tb-node-cache-config
+data:
+  CACHE_TYPE: redis
+  REDIS_HOST: tb-redis

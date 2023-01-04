@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zookeeper
+  namespace: thingsboard
+spec:
+  serviceName: "zookeeper"
+  replicas: 1
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+        - name: zookeeper
+          imagePullPolicy: IfNotPresent
+          image: zookeeper:3.5.7
+          ports:
+            - containerPort: 2181
+              name: client
+            - containerPort: 2888
+              name: server
+            - containerPort: 3888
+              name: election
+          command: ["/conf/start-node.sh"]
+          readinessProbe:
+            periodSeconds: 60
+            tcpSocket:
+              port: 2181
+          livenessProbe:
+            periodSeconds: 60
+            tcpSocket:
+              port: 2181
+          env:
+            - name: JVMFLAGS
+              value: "-Dzookeeper.electionPortBindRetry=0"
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - name: conf
+              mountPath: /conf
+              readOnly: false
+            - name: data
+              mountPath: /data
+              readOnly: false
+            - name: datalog
+              mountPath: /datalog
+              readOnly: false
+      volumes:
+        - name: conf
+          configMap:
+            name: tb-zookeeper
+            defaultMode: 0755
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "local-storage"
+        resources:
+          requests:
+            storage: 100Mi
+    - metadata:
+        name: datalog
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "local-storage"
+        resources:
+          requests:
+            storage: 100Mi

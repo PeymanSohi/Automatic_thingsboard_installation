@@ -1,0 +1,27 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: tb-http-transport-logs-0
+  labels:
+    type: local
+spec:
+  storageClassName: local-storage
+  capacity:
+    storage: 200Mi
+  local:
+    path: /mnt/tb-http-transport-logs-0        #This path should be created manually on node
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  claimRef:
+     namespace: thingsboard
+     name: logs-tb-http-transport-0
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+              - $selected_node_resources

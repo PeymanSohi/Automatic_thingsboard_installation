@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tb-coap-transport
+  namespace: thingsboard
+spec:
+  serviceName: "tb-coap-transport"
+  podManagementPolicy: Parallel
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tb-coap-transport
+  template:
+    metadata:
+      labels:
+        app: tb-coap-transport
+    spec:
+      volumes:
+        - name: tb-coap-transport-config
+          configMap:
+            name: tb-coap-transport-config
+            items:
+            - key: conf
+              path:  tb-coap-transport.conf
+            - key: logback
+              path:  logback.xml
+      containers:
+      - name: server
+        imagePullPolicy: IfNotPresent
+        image: thingsboard/tb-coap-transport:3.2.0
+        ports:
+        - containerPort: 5683
+          name: coap
+          protocol: UDP
+        env:
+        - name: TB_SERVICE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: TB_QUEUE_TYPE
+          value: "kafka"
+        - name: COAP_BIND_ADDRESS
+          value: "0.0.0.0"
+        - name: COAP_BIND_PORT
+          value: "5683"
+        - name: COAP_TIMEOUT
+          value: "10000"
+        - name: TB_KAFKA_SERVERS
+          value: "tb-kafka:9092"
+        volumeMounts:
+          - mountPath: /config
+            name: tb-coap-transport-config
+  volumeClaimTemplates:
+    - metadata:
+        name: logs
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: "local-storage"
+        resources:
+          requests:
+            storage: 200Mi

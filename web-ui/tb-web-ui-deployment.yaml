@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tb-web-ui
+  namespace: thingsboard
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tb-web-ui
+  template:
+    metadata:
+      labels:
+        app: tb-web-ui
+    spec:
+      containers:
+      - name: server
+        imagePullPolicy: IfNotPresent
+        image: thingsboard/tb-web-ui:3.2.0
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: HTTP_BIND_ADDRESS
+          value: "0.0.0.0"
+        - name: HTTP_BIND_PORT
+          value: "8080"
+        - name: TB_ENABLE_PROXY
+          value: "false"
+        - name: LOGGER_LEVEL
+          value: "info"
+        - name: LOG_FOLDER
+          value: "logs"
+        - name: LOGGER_FILENAME
+          value: "tb-web-ui-%DATE%.log"
+        - name: DOCKER_MODE
+          value: "true"
+        livenessProbe:
+          httpGet:
+            path: /index.html
+            port: http
+          initialDelaySeconds: 120
+          timeoutSeconds: 10
+      restartPolicy: Always
+      nodeSelector:
+        kubernetes.io/hostname: $selected_node_resources
+

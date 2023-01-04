@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tb-mqtt-transport
+  namespace: thingsboard
+spec:
+  serviceName: "tb-mqtt-transport"
+  podManagementPolicy: Parallel
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tb-mqtt-transport
+  template:
+    metadata:
+      labels:
+        app: tb-mqtt-transport
+    spec:
+      volumes:
+        - name: tb-mqtt-transport-config
+          configMap:
+            name: tb-mqtt-transport-config
+            items:
+            - key: conf
+              path:  tb-mqtt-transport.conf
+            - key: logback
+              path:  logback.xml
+      containers:
+      - name: server
+        imagePullPolicy: IfNotPresent
+        image: thingsboard/tb-mqtt-transport:3.2.0
+        ports:
+        - containerPort: 1883
+          name: mqtt
+        env:
+        - name: TB_SERVICE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: TB_QUEUE_TYPE
+          value: "kafka"
+        - name: MQTT_BIND_ADDRESS
+          value: "0.0.0.0"
+        - name: MQTT_BIND_PORT
+          value: "1883"
+        - name: MQTT_TIMEOUT
+          value: "10000"
+        - name: TB_KAFKA_SERVERS
+          value: "tb-kafka:9092"
+        volumeMounts:
+          - mountPath: /config
+            name: tb-mqtt-transport-config
+        readinessProbe:
+          periodSeconds: 20
+          tcpSocket:
+            port: 1883
+        livenessProbe:
+          initialDelaySeconds: 120
+          periodSeconds: 20
+          tcpSocket:
+            port: 1883
+  volumeClaimTemplates:
+    - metadata:
+        name: logs
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: "local-storage"
+        resources:
+          requests:
+            storage: 200Mi
